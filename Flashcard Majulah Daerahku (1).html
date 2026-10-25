@@ -1,0 +1,487 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Flashcard Majulah Daerahku</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: satu kolom sempit. Header, filter, strip kemajuan, satu kartu besar yang bisa dibalik, lalu tombol navigasi. */
+:root{
+  --bg:#e9f4ff; --ink:#16304a; --muted:#4a6784; --card:#ffffff; --back:#fff6d9; --line:#16304a; --shadow:#16304a;
+  --blue:#1f66d1; --on-blue:#ffffff; --blue-soft:#d9e9ff;
+  --green:#13804a; --green-soft:#d3f2e2;
+  --yellow:#ffc72c; --on-yellow:#16304a;
+  --orange:#d9560f; --orange-soft:#ffe2cf;
+  --red:#c2352d; --red-soft:#fddedb;
+  --font-d:'Baloo 2','Trebuchet MS',system-ui,sans-serif;
+  --font-b:'Nunito','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1a2b; --ink:#e7f0fb; --muted:#9fb7d0; --card:#162a43; --back:#2a2915; --line:#7fa3cc; --shadow:#050f1b;
+  --blue:#7db4ff; --on-blue:#0a2240; --blue-soft:#1b3860;
+  --green:#4fd69a; --green-soft:#15402f;
+  --orange:#ff9a5c; --orange-soft:#4a2b16;
+  --red:#ff8a82; --red-soft:#4a201e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1a2b; --ink:#e7f0fb; --muted:#9fb7d0; --card:#162a43; --back:#2a2915; --line:#7fa3cc; --shadow:#050f1b;
+  --blue:#7db4ff; --on-blue:#0a2240; --blue-soft:#1b3860;
+  --green:#4fd69a; --green-soft:#15402f;
+  --orange:#ff9a5c; --orange-soft:#4a2b16;
+  --red:#ff8a82; --red-soft:#4a201e; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16px;line-height:1.45;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+header h1{font-family:var(--font-d);font-weight:800;font-size:clamp(1.7rem,6vw,2.3rem);line-height:1.05;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);font-weight:700}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--blue)}
+
+/* filter */
+details.filters{border:2px solid var(--line);border-radius:18px;background:var(--card)}
+details.filters summary{cursor:pointer;padding:10px 14px;font-weight:800;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.filters summary::-webkit-details-marker{display:none}
+details.filters summary::after{content:"▾";transition:transform .2s}
+details.filters[open] summary::after{transform:rotate(180deg)}
+.fbody{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.frow .lbl{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);width:100%}
+.chip-btn{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-weight:800;font-size:.9rem;min-height:36px}
+.chip-btn[aria-pressed="true"]{background:var(--blue);color:var(--on-blue);border-color:var(--blue)}
+.chip-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* progress */
+.prog{display:flex;flex-direction:column;gap:8px}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:800}
+.stats{display:flex;gap:10px;font-size:.9rem;font-weight:800;flex-wrap:wrap}
+.stats span{display:inline-flex;align-items:center;gap:5px}
+.stats i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.bar{height:12px;border:2px solid var(--line);border-radius:99px;background:var(--card);overflow:hidden}
+.bar>div{height:100%;background:var(--yellow);transition:width .3s}
+.dots{display:flex;flex-wrap:wrap;gap:4px}
+.dot{width:13px;height:13px;border-radius:4px;border:2px solid var(--line);background:var(--card);padding:0}
+.dot.paham{background:var(--green);border-color:var(--green)}
+.dot.ulang{background:var(--orange);border-color:var(--orange)}
+.dot.cur{outline:3px solid var(--blue);outline-offset:1px}
+
+/* card */
+.scene{perspective:1400px}
+.card{display:grid;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.3,.7,.2,1)}
+.card.flipped{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-width:0;min-height:430px;
+  border:3px solid var(--line);border-top:14px solid var(--tc);border-radius:26px;box-shadow:0 7px 0 var(--shadow);
+  padding:16px 18px 20px;display:flex;flex-direction:column;gap:12px;background:var(--card)}
+.face.back{transform:rotateY(180deg);background:var(--back)}
+.face[data-act="flip"]{cursor:pointer}
+.tA{--tc:var(--blue)} .tB{--tc:var(--green)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:3px 10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.tag.topic{background:var(--tc);border-color:var(--tc);color:var(--on-blue)}
+.tB .tag.topic{color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tB .tag.topic{color:#06261a}}
+:root[data-theme="dark"] .tB .tag.topic{color:#06261a}
+.tag.ty{margin-left:auto;background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
+.tag.st{background:var(--green-soft);border-color:var(--green)}
+.tag.st.ulang{background:var(--orange-soft);border-color:var(--orange)}
+.art{width:82px;height:82px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-size:2.7rem;align-self:center;border:2px solid var(--line)}
+.tB .art{background:var(--green-soft)}
+.art.big{width:110px;height:110px;font-size:3.7rem}
+.q{font-family:var(--font-d);font-weight:700;font-size:clamp(1.2rem,4.4vw,1.55rem);line-height:1.25;margin:0;text-align:center;text-wrap:balance}
+.hint{margin:auto 0 0;text-align:center;color:var(--muted);font-weight:700}
+.opts{display:grid;gap:8px;margin-top:auto}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:9px 12px;font-weight:700;min-height:48px;box-shadow:0 3px 0 var(--shadow)}
+.opt b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-size:.85rem}
+.opt span{min-width:0;overflow-wrap:anywhere}
+.opt:hover:not(:disabled){background:var(--blue-soft)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--shadow)}
+.opt.right{background:var(--green-soft);border-color:var(--green)}
+.opt.right b{background:var(--green);color:#fff}
+.opt.wrong{background:var(--red-soft);border-color:var(--red)}
+.opt.wrong b{background:var(--red);color:#fff}
+.opt:disabled{cursor:default}
+.opts.two{grid-template-columns:1fr 1fr}
+.opts.two .opt{justify-content:center;font-size:1.1rem;min-height:56px}
+
+.verdict{font-family:var(--font-d);font-weight:800;font-size:1.25rem;border-radius:14px;padding:6px 12px;display:flex;gap:8px;align-items:center;justify-content:center;text-align:center}
+.verdict.ok{background:var(--green-soft);color:var(--ink);border:2px solid var(--green)}
+.verdict.no{background:var(--orange-soft);border:2px solid var(--orange)}
+.verdict.neutral{background:var(--blue-soft);border:2px solid var(--blue)}
+.lab{font-size:.78rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:4px}
+.ans{font-family:var(--font-d);font-weight:800;font-size:clamp(1.3rem,4.8vw,1.7rem);line-height:1.2;text-align:center;margin:0;text-wrap:balance}
+.exp{margin:0;text-align:center;font-size:1.05rem;font-weight:600}
+.you{margin:0;text-align:center;color:var(--muted);font-weight:700}
+.back-hint{margin-top:auto;text-align:center;font-size:.85rem;color:var(--muted);font-weight:700}
+
+/* controls */
+.controls{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.nav{display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:8px}
+.btn{border:3px solid var(--line);border-radius:16px;background:var(--card);font-weight:800;padding:10px 12px;min-height:52px;box-shadow:0 4px 0 var(--shadow)}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--yellow);color:var(--on-yellow);font-size:1.05rem}
+.rate{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rate .btn.ok{background:var(--green-soft);border-color:var(--green)}
+.rate .btn.re{background:var(--orange-soft);border-color:var(--orange)}
+.rate[hidden]{display:none}
+@media (max-width:480px){
+  .nav{grid-template-columns:1fr 1fr}
+  .nav .primary{grid-column:1/-1;order:-1}
+  .face{min-height:400px;padding:14px 14px 18px}
+}
+
+/* summary */
+.sum{border:3px solid var(--line);border-top:14px solid var(--yellow);border-radius:26px;background:var(--card);box-shadow:0 7px 0 var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+.sum h2{font-family:var(--font-d);font-size:1.7rem;margin:0}
+.sum .art{background:var(--yellow)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.grid div{border:2px solid var(--line);border-radius:14px;padding:8px 4px;font-weight:700;font-size:.85rem}
+.grid b{display:block;font-family:var(--font-d);font-size:1.8rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.sum .acts{display:flex;flex-direction:column;gap:8px;width:100%}
+.empty{padding:30px 18px}
+footer{font-size:.82rem;color:var(--muted);font-weight:600;text-align:center;margin-top:8px}
+@media (prefers-reduced-motion:reduce){.card,.bar>div{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IPAS Kelas V · Bab 2</div>
+    <h1>Majulah Daerahku!</h1>
+    <p>Jawab dulu dalam hati atau pilih jawabanmu, baru buka kartunya.</p>
+  </header>
+
+  <details class="filters" id="filters" open>
+    <summary>Pilih kartu <span id="fsum" style="font-weight:700;color:var(--muted)"></span></summary>
+    <div class="fbody">
+      <div class="frow"><span class="lbl">Topik</span>
+        <button class="chip-btn" data-f="topic" data-v="all">Semua</button>
+        <button class="chip-btn" data-f="topic" data-v="A">A · Memenuhi Kebutuhan</button>
+        <button class="chip-btn" data-f="topic" data-v="B">B · Ekonomi di Daerahku</button>
+      </div>
+      <div class="frow"><span class="lbl">Level</span>
+        <button class="chip-btn" data-f="level" data-v="all">Semua</button>
+        <button class="chip-btn" data-f="level" data-v="1">1 Kenali</button>
+        <button class="chip-btn" data-f="level" data-v="2">2 Bedakan</button>
+        <button class="chip-btn" data-f="level" data-v="3">3 Terapkan</button>
+        <button class="chip-btn" data-f="level" data-v="4">4 Tantangan</button>
+      </div>
+      <div class="frow"><span class="lbl">Cara belajar</span>
+        <button class="chip-btn" data-f="mode" data-v="all">Semua kartu</button>
+        <button class="chip-btn" data-f="mode" data-v="ulang" id="modeUlang">Perlu belajar lagi</button>
+        <button class="chip-btn" data-f="shuffle" data-v="x" id="shuf">Acak urutan</button>
+      </div>
+    </div>
+  </details>
+
+  <section class="prog" aria-label="Kemajuan belajar">
+    <div class="prog-top"><span id="count"></span>
+      <span class="stats"><span><i style="background:var(--green)"></i><span id="sP">0</span> paham</span><span><i style="background:var(--orange)"></i><span id="sU">0</span> perlu ulang</span></span></div>
+    <div class="bar"><div id="barfill" style="width:0"></div></div>
+    <div class="dots" id="dots"></div>
+  </section>
+
+  <main class="scene" id="stage" aria-live="polite"></main>
+
+  <div class="controls" id="controls">
+    <div class="rate" id="rate" hidden>
+      <button class="btn re" data-act="ulang">Perlu Belajar Lagi</button>
+      <button class="btn ok" data-act="paham">Sudah Paham</button>
+    </div>
+    <div class="nav">
+      <button class="btn" data-act="prev" id="bPrev">← Kembali</button>
+      <button class="btn primary" data-act="flip" id="bFlip">Lihat Jawaban</button>
+      <button class="btn" data-act="next" id="bNext">Lanjut →</button>
+    </div>
+  </div>
+  <footer>Isi kartu disusun dari rangkuman Bab 2, Topik A dan B. Situasi sehari-hari ditambahkan sebagai bahan latihan. Pakai tombol panah kiri/kanan dan spasi untuk berpindah dan membalik kartu.</footer>
+</div>
+
+<script>
+/* ===== Data kartu ===== */
+const TOPICS={A:{n:"Topik A",s:"Bagaimana Aku Memenuhi Kebutuhanku?"},B:{n:"Topik B",s:"Kegiatan Ekonomi di Daerahku!"}};
+const LV={1:"Kenali",2:"Bedakan",3:"Terapkan",4:"Tantangan"};
+const TY={flip:"Tebak jawabanmu!",mc:"Pilihan ganda",tf:"Benar atau salah?",img:"Tebak dari gambar!",sit:"Tantangan situasi"};
+const raw=[];
+const F=(t,lv,art,q,ans,exp)=>raw.push({t,lv,ty:"flip",art,q,ans,exp});
+const M=(t,lv,ty,art,q,o,exp)=>raw.push({t,lv,ty,art,q,o,exp}); /* o[0] = jawaban benar, urutan diacak saat tampil */
+const TF=(t,lv,art,q,a,exp)=>raw.push({t,lv,ty:"tf",art,q,a,exp});
+
+/* ---------- Topik A ---------- */
+F("A",1,"🧺","Tahukah kamu? Apa yang dimaksud kegiatan ekonomi?","Aktivitas manusia untuk memenuhi kebutuhan hidupnya.","Contohnya bertani, membuat roti, berdagang, dan membeli sayur di pasar.");
+F("A",1,"📚","Apa yang dipelajari oleh ilmu ekonomi?","Cara manusia memenuhi kebutuhan yang tidak terbatas dengan alat pemuas kebutuhan yang jumlahnya terbatas.","Kebutuhan kita banyak sekali, tetapi alat pemuasnya terbatas. Karena itu kita perlu memilih dengan bijak.");
+F("A",1,"🔗","Sebutkan tiga kegiatan ekonomi utama!","Produksi, distribusi, dan konsumsi.","Ketiganya saling berhubungan dan membentuk satu rantai ekonomi.");
+F("A",1,"🏭","Apa aku? Aku kegiatan menghasilkan barang atau jasa, atau menambah nilai guna agar lebih bermanfaat.","Produksi","Orang atau badan yang melakukan produksi disebut produsen.");
+F("A",1,"🚚","Apa aku? Aku kegiatan menyalurkan barang dan jasa dari produsen ke konsumen.","Distribusi","Pihak yang menyalurkan barang dan jasa disebut distributor.");
+F("A",1,"🛍️","Apa aku? Aku kegiatan memakai, menggunakan, atau menghabiskan nilai guna barang dan jasa.","Konsumsi","Orang yang menggunakan barang atau jasa disebut konsumen.");
+M("A",1,"mc","🧑‍🏭","Orang atau badan yang melakukan kegiatan produksi disebut ...",["Produsen","Distributor","Konsumen","Pedagang eceran"],"Produsen menghasilkan barang atau jasa. Distributor menyalurkan, konsumen menggunakan.");
+F("A",1,"🧩","Sebutkan empat jenis produksi!","Produksi barang, jasa, agraris, dan ekstraktif.","Tiap jenis punya ciri berbeda. Kamu akan melatih membedakannya di Level 2.");
+F("A",1,"⭐","Apa itu nilai guna barang? Sebutkan tiga jenisnya!","Nilai guna adalah manfaat barang. Jenisnya: nilai guna bentuk, tempat, dan waktu.","Produksi dilakukan untuk menambah nilai guna ini.");
+F("A",1,"🧱","Apa saja faktor-faktor produksi?","Sumber daya alam; air, udara, dan iklim; sumber daya manusia; sumber daya modal.","Sumber daya alam misalnya tanah dan hasil tambang. Modal berupa uang, peralatan, dan bahan.");
+TF("A",1,"🎯","Tujuan umum produksi adalah memenuhi kebutuhan manusia untuk mencapai kemakmuran.",true,"Tujuan khususnya: menambah nilai guna, menghasilkan barang/jasa, meningkatkan kemakmuran masyarakat, memperoleh keuntungan optimal, dan memperluas lapangan usaha.");
+F("A",1,"📦","Apa saja tujuan distribusi?","Menyalurkan produk/jasa, meningkatkan nilai guna, mempermudah konsumen mendapatkan barang, dan menjaga kelangsungan kualitas produksi.","Tanpa distribusi, barang sulit sampai ke tangan konsumen.");
+F("A",1,"🗺️","Siapa saja yang termasuk saluran distribusi?","Pedagang (besar dan eceran) serta perantara khusus: agen, makelar, komisioner, importir, dan eksportir.","Pedagang membeli lalu menjual lagi barang tanpa mengubah bentuknya untuk mencari keuntungan.");
+F("A",1,"🍎","Apa saja tujuan konsumsi?","Memenuhi kebutuhan jasmani dan rohani, mengurangi nilai guna barang/jasa, dan mendukung proses produksi.","Konsumsi juga membuat produsen terus berproduksi.");
+F("A",1,"🏛️","Selain produsen dan konsumen, siapa lagi pelaku ekonomi?","Pemerintah dan masyarakat luar negeri.","Pemerintah membuat kebijakan ekonomi. Masyarakat luar negeri melaksanakan ekspor dan impor.");
+
+M("A",2,"mc","🍞","Membuat roti dan membuat mebel termasuk produksi ...",["barang","jasa","ekstraktif","agraris"],"Produksi barang mengubah sifat atau bentuk benda untuk menghasilkan barang konsumsi atau barang modal.");
+M("A",2,"mc","🩺","Pengobatan oleh dokter dan perawatan kecantikan termasuk produksi ...",["jasa","barang","agraris","ekstraktif"],"Produksi jasa menambah nilai guna tanpa mengubah bentuk fisik barang.");
+M("A",2,"mc","🌾","Pertanian, perkebunan, peternakan, dan perikanan darat termasuk produksi ...",["agraris","ekstraktif","jasa","barang"],"Produksi agraris mengolah hasil alam untuk menghasilkan barang bernilai ekonomi.");
+M("A",2,"mc","⚓","Penangkapan ikan di laut dan penebangan kayu termasuk produksi ...",["ekstraktif","agraris","jasa","barang"],"Ekstraktif berarti mengambil sumber daya alam langsung dari lingkungannya, seperti pengeboran minyak dan pertambangan.");
+TF("A",2,"⛏️","Menambang batu bara dan bertani padi sama-sama produksi agraris.",false,"Menambang termasuk produksi ekstraktif (mengambil langsung dari alam). Bertani termasuk produksi agraris.");
+M("A",2,"mc","🪑","Kayu diubah menjadi meja dan kursi. Nilai guna yang bertambah adalah nilai guna ...",["bentuk","tempat","waktu","jasa"],"Nilai guna bentuk bertambah karena bentuk benda berubah.");
+M("A",2,"mc","🏗️","Pasir di sungai dipindahkan ke kota untuk bahan bangunan. Nilai guna yang bertambah adalah nilai guna ...",["tempat","bentuk","waktu","jasa"],"Nilai guna tempat bertambah karena benda dipindahkan ke tempat yang tepat.");
+M("A",2,"mc","☔","Jas hujan dipakai saat musim hujan. Gabah disimpan untuk masa paceklik. Keduanya contoh nilai guna ...",["waktu","bentuk","tempat","jasa"],"Nilai guna waktu bertambah jika barang digunakan pada waktu yang tepat.");
+M("A",2,"mc","🏪","Siapa yang membeli dari grosir lalu menjual langsung kepada konsumen?",["Pedagang eceran (retailer)","Pedagang besar (grosir)","Importir","Eksportir"],"Pedagang besar menjual dalam jumlah besar kepada pedagang kecil. Pedagang eceran menjual langsung ke konsumen.");
+M("A",2,"mc","🤝","Perantara yang bekerja atas nama sendiri serta menanggung biaya dan risiko sendiri adalah ...",["komisioner","makelar","agen","eksportir"],"Makelar bekerja atas nama produsen. Agen menyediakan jasa khusus atas nama produsen.");
+M("A",2,"mc","🌏","Apa beda importir dan eksportir?",["Importir mendatangkan barang dari luar negeri, eksportir mengirim barang ke luar negeri","Importir mengirim barang ke luar negeri, eksportir mendatangkan barang dari luar negeri","Keduanya hanya menjual di pasar desa","Keduanya membuat barang di pabrik"],"Impor = barang masuk dari luar negeri. Ekspor = barang dikirim ke luar negeri.");
+M("A",2,"mc","🛒","Manakah yang merupakan kegiatan konsumsi?",["Membeli buku dan alat tulis untuk sekolah","Menanam padi di sawah","Mengirim beras ke toko","Membuat roti di pabrik"],"Konsumsi berarti menggunakan barang atau jasa. Menanam dan membuat adalah produksi, mengirim adalah distribusi.");
+TF("A",2,"🔄","Pedagang membeli barang lalu menjual kembali tanpa mengubah bentuknya untuk mencari keuntungan.",true,"Itulah ciri pedagang sebagai saluran distribusi. Yang mengubah bentuk barang adalah produsen.");
+
+M("A",3,"img","👨‍🌾","Tebak dari gambar! Pak Tani menanam padi di sawah. Ini produksi jenis ...",["agraris","ekstraktif","jasa"],"Bertani mengolah hasil alam, jadi termasuk produksi agraris.");
+M("A",3,"img","🛢️","Tebak dari gambar! Pekerja mengebor minyak bumi dari dalam tanah. Ini produksi jenis ...",["ekstraktif","agraris","jasa"],"Pengeboran minyak mengambil sumber daya alam langsung dari lingkungannya, jadi ekstraktif.");
+M("A",3,"img","🚛","Tebak dari gambar! Truk membawa sayur dari kebun ke pasar kota. Ini kegiatan ...",["distribusi","produksi","konsumsi"],"Sayur disalurkan dari produsen ke konsumen. Itu kegiatan distribusi.");
+M("A",3,"sit","🥖","Pak Budi membuat roti di rumah produksinya. Membuat roti itu kegiatan ...",["produksi","distribusi","konsumsi"],"Membuat roti menghasilkan barang. Setelah itu, mengantar roti ke toko adalah distribusi.");
+M("A",3,"sit","🧺","Ibu membeli beras, gula, dan minyak di warung. Ibu sedang melakukan kegiatan ...",["konsumsi","produksi","distribusi"],"Ibu menggunakan barang untuk kebutuhan keluarga, jadi itu konsumsi.");
+M("A",3,"sit","🏬","Bu Sari membeli minyak goreng dalam jumlah besar dari grosir, lalu menjualnya per bungkus kepada tetangga. Bu Sari adalah ...",["pedagang eceran","pedagang besar","importir","produsen minyak"],"Bu Sari menjual langsung kepada konsumen, jadi ia pedagang eceran.");
+M("A",3,"sit","☕","Perusahaan Pak Hasan mengirim kopi ke Jepang. Pak Hasan berperan sebagai ...",["eksportir","importir","komisioner","konsumen"],"Mengirim barang ke luar negeri adalah tugas eksportir.");
+M("A",3,"sit","📒","Uang jajan Dina tinggal sedikit. Ia butuh buku tulis untuk sekolah, tetapi juga ingin mainan baru. Sebaiknya Dina ...",["membeli buku tulis lebih dulu","membeli mainan lebih dulu","membeli dua-duanya walau uang kurang","membeli apa saja yang sedang ramai"],"Prioritaskan kebutuhan pokok dan sesuaikan pengeluaran dengan pendapatan.");
+TF("A",3,"🛑","Membeli barang tanpa pertimbangan matang disebut perilaku konsumtif, dan sebaiknya dihindari.",true,"Hindari hidup boros dan perilaku konsumtif.");
+
+F("A",4,"🌾","Menurutmu, apa yang terjadi jika petani berhenti menanam padi?","Produksi beras terhenti, sehingga distribusi dan konsumsi ikut terganggu.","Jika salah satu kegiatan terhenti, pemenuhan kebutuhan manusia terganggu.");
+M("A",4,"sit","🚧","Jalan menuju kebun rusak, truk tidak bisa mengangkut sayur, dan sayur membusuk. Kegiatan apa yang terganggu?",["distribusi","produksi","konsumsi","ekspor"],"Sayur sudah diproduksi, tetapi tidak tersalurkan ke konsumen. Yang terganggu adalah distribusi.");
+M("A",4,"sit","🛋️","Pak Joko membuat kursi dari kayu lalu menjualnya ke kota. Nilai guna apa saja yang bertambah?",["bentuk dan tempat","waktu saja","tempat saja","tidak ada"],"Kayu menjadi kursi (nilai guna bentuk), lalu dipindah ke kota (nilai guna tempat).");
+F("A",4,"🧠","Mengapa produksi, distribusi, dan konsumsi disebut satu rantai ekonomi?","Karena saling berhubungan: hasil produksi disalurkan lewat distribusi, lalu digunakan dalam konsumsi.","Konsumsi juga mendukung proses produksi. Jika satu terhenti, rantai terganggu.");
+M("A",4,"sit","💸","Penghasilan Ayah Rp3.000.000 sebulan. Ayah ingin membeli ponsel Rp5.000.000 tanpa memikirkan kebutuhan lain. Nasihat yang tepat adalah ...",["sesuaikan pengeluaran dengan pendapatan dan utamakan kebutuhan pokok","beli saja, uang pasti cukup","tidak perlu membeli beras","pinjam uang dulu tanpa dihitung"],"Konsumsi yang bijak: prioritaskan kebutuhan pokok, sesuaikan pengeluaran dengan pendapatan, dan hindari boros.");
+F("A",4,"🌐","Menurutmu, mengapa pemerintah dan masyarakat luar negeri juga disebut pelaku ekonomi?","Pemerintah membuat kebijakan ekonomi, sedangkan masyarakat luar negeri melaksanakan ekspor dan impor.","Jadi kegiatan ekonomi tidak hanya melibatkan produsen dan konsumen.");
+
+/* ---------- Topik B ---------- */
+F("B",1,"🍚","Apa itu kebutuhan primer? Beri contohnya!","Kebutuhan paling utama dan mendasar untuk bertahan hidup.","Contoh: pangan (makanan), sandang (pakaian), dan papan (tempat tinggal).");
+F("B",1,"📺","Apa itu kebutuhan sekunder?","Kebutuhan pelengkap yang dipenuhi setelah kebutuhan primer terpenuhi.","Contoh: peralatan rumah tangga, kendaraan, TV, dan hp.");
+F("B",1,"💎","Apa itu kebutuhan tersier?","Kebutuhan yang berkaitan dengan gaya hidup, kemewahan, dan status sosial. Dipenuhi paling akhir.","Contoh: mobil mewah, perhiasan mahal, dan liburan mewah.");
+F("B",1,"🏠","Apa arti pangan, sandang, dan papan?","Pangan = makanan, sandang = pakaian, papan = tempat tinggal.","Ketiganya adalah contoh kebutuhan primer.");
+F("B",1,"💡","Siapa yang disebut wirausaha atau wiraswasta?","Orang yang mampu menciptakan lapangan usahanya sendiri.","Perbedaan tingkat kebutuhan mendorong lahirnya berbagai jenis usaha.");
+F("B",1,"🧭","Sebutkan enam jenis aktivitas ekonomi masyarakat!","Agraris, industri, jasa, perdagangan, pertambangan, dan pariwisata.","Masing-masing punya ciri dan contoh sendiri. Ayo kenali satu per satu.");
+F("B",1,"🌱","Apa aku? Aku usaha yang memanfaatkan sumber daya alam: pertanian, perkebunan, peternakan, perikanan, dan kehutanan.","Agraris","Hasilnya: padi, jagung, teh, kopi, daging, telur, ikan, kayu, dan rotan.");
+F("B",1,"⚙️","Apa aku? Aku mengolah bahan baku menjadi barang jadi atau setengah jadi yang bernilai tambah.","Industri","Industri kecil: kerajinan mebel, pembuatan tahu/tempe. Industri besar: pabrik mobil, tekstil, baja.");
+F("B",1,"🧑‍⚕️","Apa aku? Aku menjual pelayanan atau tindakan yang tidak berwujud fisik.","Jasa","Contoh: guru, dokter, angkutan umum, penjahit, perbankan, dan salon.");
+F("B",1,"🛒","Apa aku? Aku kegiatan jual beli barang atau jasa berdasarkan kesepakatan bersama.","Perdagangan","Contoh: pedagang grosir, eceran, kaki lima, keliling, dan asongan.");
+F("B",1,"⛏️","Apa aku? Aku penggalian ke dalam bumi untuk mengambil hasil tambang.","Pertambangan","Hasilnya: minyak bumi, gas alam, mineral, dan batu bara.");
+F("B",1,"🏞️","Apa aku? Aku memanfaatkan keindahan atau ketampakan alam untuk menarik wisatawan.","Pariwisata","Contoh: Danau Toba, Pantai Sanur, Gunung Bromo, dan Gunung Tangkuban Perahu.");
+F("B",1,"🌿","Apa beda tanaman perkebunan musiman dan tahunan?","Musiman berumur pendek (sekitar 6 bulan). Tahunan berumur panjang (minimal 12 bulan).","Musiman: tebu, tembakau, rosela. Tahunan: kelapa sawit, kopi, teh, karet, cengkih.");
+F("B",1,"🧰","Sebutkan empat faktor pendukung perekonomian daerah!","Kondisi geografis dan sumber daya alam; sumber daya manusia; sarana dan prasarana; ilmu pengetahuan dan teknologi.","Daerah maju jika masyarakatnya pandai mengelola potensi daerahnya.");
+
+M("B",2,"mc","🏘️","Manakah yang termasuk kebutuhan primer?",["Tempat tinggal","Televisi","Kendaraan","Perhiasan mahal"],"Papan (tempat tinggal) adalah kebutuhan dasar. TV dan kendaraan sekunder, perhiasan mahal tersier.");
+M("B",2,"mc","📱","Manakah yang termasuk kebutuhan sekunder?",["Telepon genggam (hp)","Makanan sehari-hari","Liburan mewah","Pakaian sehari-hari"],"Sekunder dipenuhi setelah kebutuhan primer terpenuhi. Contoh: peralatan rumah tangga, kendaraan, TV, dan hp.");
+M("B",2,"mc","🏖️","Manakah yang termasuk kebutuhan tersier?",["Liburan mewah","Nasi dan lauk","Televisi","Pakaian sehari-hari"],"Tersier berkaitan dengan gaya hidup dan kemewahan, dan dipenuhi paling akhir.");
+TF("B",2,"🔢","Kebutuhan tersier harus dipenuhi lebih dulu daripada kebutuhan primer.",false,"Urutannya primer, sekunder, lalu tersier. Tersier dipenuhi paling akhir.");
+M("B",2,"mc","🍲","Pembuatan tahu dan tempe termasuk usaha ...",["industri (kecil)","jasa","pertambangan","pariwisata"],"Industri mengolah bahan baku menjadi barang jadi yang bernilai tambah.");
+M("B",2,"mc","👩‍🏫","Guru, dokter, dan salon termasuk usaha ...",["jasa","industri","agraris","perdagangan"],"Jasa menjual pelayanan atau tindakan yang tidak berwujud fisik.");
+M("B",2,"mc","🧺","Pedagang kaki lima, pedagang keliling, dan pedagang asongan termasuk usaha ...",["perdagangan","jasa","industri","agraris"],"Perdagangan adalah kegiatan jual beli barang atau jasa.");
+M("B",2,"mc","🪨","Minyak bumi, gas alam, dan batu bara diperoleh dari usaha ...",["pertambangan","agraris","industri","pariwisata"],"Pertambangan menggali ke dalam bumi untuk mengambil hasil tambang.");
+TF("B",2,"🌴","Kelapa sawit, kopi, teh, dan karet adalah tanaman perkebunan musiman.",false,"Semuanya tanaman tahunan yang berumur panjang (minimal 12 bulan).");
+TF("B",2,"🎋","Tebu, tembakau, dan rosela adalah tanaman perkebunan musiman.",true,"Tanaman musiman berumur pendek, sekitar 6 bulan.");
+M("B",2,"mc","🚗","Manakah yang termasuk industri besar?",["Pabrik mobil","Pembuatan tahu","Kerajinan mebel","Pembuatan tempe"],"Pabrik mobil, tekstil, dan baja adalah industri besar. Tahu, tempe, dan mebel contoh industri kecil.");
+M("B",2,"mc","⛰️","Daerah pegunungan cocok untuk usaha ...",["berkebun sayur, buah, teh, dan kopi","menjadi nelayan","membuka pusat perkantoran dan industri","menangkap ikan di laut"],"Kondisi alam memengaruhi kegiatan ekonomi masyarakat setempat.");
+M("B",2,"mc","🌊","Penduduk daerah pantai banyak bekerja di bidang perikanan dan kelautan sebagai ...",["nelayan","petani teh","penambang batu bara","pegawai perkantoran"],"Daerah pantai berhubungan dengan perikanan dan kelautan.");
+M("B",2,"mc","🏙️","Daerah dataran rendah banyak dimanfaatkan untuk ...",["pemukiman, perkantoran, perdagangan, transportasi, dan industri","berkebun teh dan kopi saja","mencari hasil laut saja","memakai pakaian tebal"],"Di dataran rendah pembangunan pesat dan transportasi mudah, jadi kehidupan masyarakat lebih cepat berkembang.");
+M("B",2,"mc","🧥","Mengapa penduduk daerah pegunungan memakai pakaian tebal?",["Karena udaranya dingin","Karena dekat laut","Karena banyak pabrik","Karena sering ke pasar"],"Kondisi alam juga memengaruhi kehidupan sosial budaya, termasuk pakaian dan bentuk rumah.");
+
+M("B",3,"img","🎣","Tebak dari gambar! Pak Ahmad pergi melaut menangkap ikan. Ia paling mungkin tinggal di daerah ...",["pantai","pegunungan","dataran rendah perkotaan"],"Nelayan banyak ditemui di daerah pantai.");
+M("B",3,"img","🍵","Tebak dari gambar! Kebun teh terhampar di lereng yang sejuk. Daerah ini adalah ...",["pegunungan","pantai","dataran rendah perkotaan"],"Teh, kopi, sayur, dan buah banyak ditanam di pegunungan atau dataran tinggi.");
+M("B",3,"img","🌋","Tebak dari gambar! Wisatawan datang menikmati pemandangan Gunung Bromo. Usaha ini termasuk ...",["pariwisata","pertambangan","industri besar","agraris"],"Pariwisata memanfaatkan keindahan atau ketampakan alam untuk menarik wisatawan.");
+M("B",3,"sit","🥔","Sebuah pabrik mengubah singkong menjadi keripik kemasan. Kegiatan di pabrik ini termasuk usaha ...",["industri","agraris","jasa","pariwisata"],"Pabrik mengolah bahan baku menjadi barang jadi. Menanam singkongnya termasuk agraris.");
+M("B",3,"sit","👕","Rani membeli seragam sekolah baru karena seragam lamanya sudah tidak muat. Kebutuhan itu termasuk ...",["primer (sandang)","sekunder","tersier","bukan kebutuhan"],"Pakaian termasuk sandang, yaitu kebutuhan primer.");
+M("B",3,"sit","📺","Setelah kebutuhan makan, pakaian, dan rumah terpenuhi, keluarga Budi membeli TV. TV termasuk kebutuhan ...",["sekunder","primer","tersier","bukan kebutuhan"],"Kebutuhan sekunder dipenuhi setelah kebutuhan primer terpenuhi.");
+M("B",3,"sit","⌚","Seorang pengusaha membeli jam tangan sangat mahal supaya terlihat berkelas. Ini kebutuhan ...",["tersier","primer","sekunder","pangan"],"Tersier berkaitan dengan gaya hidup, kemewahan, dan status sosial.");
+M("B",3,"sit","🧑‍🍳","Pak Wayan membuka usaha tempe sendiri, tidak bekerja pada orang lain. Pak Wayan disebut ...",["wirausaha","importir","komisioner","wisatawan"],"Wirausaha atau wiraswasta mampu menciptakan lapangan usahanya sendiri.");
+M("B",3,"sit","🚜","Petani memakai mesin panen sehingga hasil panen lebih banyak dan lebih cepat. Faktor pendukung ekonomi yang berperan adalah ...",["ilmu pengetahuan dan teknologi","sarana dan prasarana","kondisi geografis","sumber daya alam"],"Teknologi dan mesin meningkatkan efisiensi, kualitas, serta jumlah hasil produksi.");
+M("B",3,"sit","🛣️","Jalan desa rusak sehingga truk sulit mengangkut hasil kebun ke kota. Faktor yang perlu diperbaiki adalah ...",["sarana dan prasarana","sumber daya manusia","ilmu pengetahuan","kondisi geografis"],"Sarana dan prasarana meliputi jalan, transportasi, dan tempat usaha yang lancar.");
+M("B",3,"sit","🏖️","Rumah penduduk sebuah daerah berjajar memanjang di sepanjang garis pantai. Mengapa?",["Agar mudah mencari hasil laut","Agar dekat kebun teh","Agar udaranya lebih dingin","Agar dekat pertambangan"],"Di daerah pantai, pemukiman membentang di sepanjang garis pantai untuk memudahkan pencarian hasil laut.");
+
+M("B",4,"sit","☕","Daerah Sinta kaya kopi, tetapi warganya belum terampil mengolah kopi dengan mesin. Apa yang sebaiknya ditingkatkan?",["keterampilan warga (SDM) dan teknologi pengolahan","jumlah pantai","jumlah tambang","tebalnya pakaian warga"],"Potensi daerah perlu dikelola oleh manusia yang terampil dengan bantuan teknologi.");
+M("B",4,"sit","🐟","Nelayan di sebuah pantai punya banyak ikan, tetapi jalan ke kota rusak sehingga ikan sulit dijual. Pernyataan yang paling tepat adalah ...",["potensi ada, tetapi sarana dan prasarana perlu diperbaiki","pantai tidak punya potensi","nelayan harus berhenti melaut","ikan tidak bisa dijual"],"Sumber daya alam sudah ada. Yang kurang adalah sarana dan prasarana.");
+M("B",4,"sit","🧮","Keluarga Rani punya uang terbatas. Urutan pemenuhan kebutuhan yang tepat adalah ...",["beras, lalu TV, lalu liburan mewah","liburan mewah, lalu TV, lalu beras","TV, lalu beras, lalu liburan mewah","beras, lalu liburan mewah, lalu TV"],"Primer lebih dulu, lalu sekunder, dan tersier paling akhir.");
+M("B",4,"sit","🌱","Pak Tono menanam tebu dan karet. Pernyataan yang benar adalah ...",["tebu tanaman musiman, karet tanaman tahunan","tebu tanaman tahunan, karet tanaman musiman","keduanya musiman","keduanya tahunan"],"Tebu berumur pendek (musiman). Karet berumur panjang (tahunan).");
+F("B",4,"🏔️","Menurutmu, mengapa usaha di pegunungan, pantai, dan dataran rendah bisa berbeda?","Karena kondisi alam dan bentuk permukaan bumi memengaruhi kegiatan ekonomi dan kehidupan masyarakat.","Pegunungan: berkebun sayur, teh, kopi. Pantai: perikanan. Dataran rendah: perkantoran, perdagangan, transportasi, industri.");
+F("B",4,"🔗","Apa hubungan potensi daerah, aktivitas ekonomi, dan pemenuhan kebutuhan masyarakat?","Potensi daerah dikelola menjadi aktivitas ekonomi, lalu hasilnya memenuhi kebutuhan masyarakat.","Kondisi ekonomi daerah dipengaruhi cara masyarakat mengelola potensinya: alam, SDM, sarana-prasarana, dan teknologi.");
+F("B",4,"🤲","Mengapa setiap jenis usaha penting bagi masyarakat?","Karena setiap jenis usaha saling melengkapi kebutuhan hidup masyarakat.","Petani, nelayan, pedagang, pekerja pabrik, dan guru saling membutuhkan hasil kerja satu sama lain.");
+
+raw.forEach((c,n)=>{c.n=n;c.id=c.t+String(n+1).padStart(3,"0")});
+const CARDS=raw, BYID=Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+/* ===== State ===== */
+const KEY="ipas5-bab2-flashcard-v1";
+let prog={};
+try{prog=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){prog={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(prog))}catch(e){}};
+const S={topic:"all",level:"all",mode:"all",shuffle:false,deck:[],i:0,flipped:false,picked:{},order:{},timer:null,resetArm:false};
+const OKS=["Hebat, kamu benar!","Tepat sekali!","Keren, jawabanmu benar!","Betul! Pertahankan ya!"];
+const $=s=>document.querySelector(s);
+const stage=$("#stage");
+
+function shuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function opts(c){
+  if(c.ty==="tf")return{texts:["Benar","Salah"],order:[0,1],right:c.a?0:1};
+  if(!S.order[c.id])S.order[c.id]=shuf(c.o.map((_,i)=>i));
+  return{texts:c.o,order:S.order[c.id],right:0};
+}
+const answerText=c=>c.ty==="flip"?c.ans:c.ty==="tf"?(c.a?"Benar":"Salah"):c.o[0];
+
+function buildDeck(){
+  let d=CARDS.filter(c=>(S.topic==="all"||c.t===S.topic)&&(S.level==="all"||c.lv==S.level)&&(S.mode==="all"||prog[c.id]==="ulang"));
+  d.sort((a,b)=>a.lv-b.lv||(a.t<b.t?-1:a.t>b.t?1:0)||a.n-b.n);
+  if(S.shuffle)d=shuf(d);
+  S.deck=d;S.i=0;S.flipped=false;clearTimeout(S.timer);
+}
+
+/* ===== Render ===== */
+function faceFront(c){
+  const p=S.picked[c.id],st=prog[c.id],isFlip=c.ty==="flip";
+  let body;
+  if(isFlip){body=`<p class="hint">Coba jawab dalam hati dulu. Lalu ketuk kartu ini untuk melihat jawabannya.</p>`}
+  else{
+    const o=opts(c);
+    const letters="ABCD";
+    body=`<div class="opts ${c.ty==="tf"?"two":""}">`+o.order.map((oi,k)=>{
+      let cls="";
+      if(p){if(oi===o.right)cls="right";else if(p.i===oi)cls="wrong"}
+      const mark=cls==="right"?"✓":cls==="wrong"?"✗":letters[k];
+      const letter=c.ty==="tf"?"":`<b aria-hidden="true">${mark}</b>`;
+      return `<button class="opt ${cls}" data-opt="${oi}" ${p?"disabled":""}>${letter}<span>${o.texts[oi]}</span></button>`}).join("")+`</div>`;
+  }
+  const stTag=st?`<span class="tag st ${st}">${st==="paham"?"✓ Sudah paham":"↻ Perlu ulang"}</span>`:"";
+  return `<div class="face front t${c.t}" ${isFlip?`data-act="flip" role="button" tabindex="0" aria-label="Balik kartu untuk melihat jawaban"`:""}>
+    <div class="meta"><span class="tag topic">${TOPICS[c.t].n}</span><span class="tag">Level ${c.lv} · ${LV[c.lv]}</span>${stTag}<span class="tag ty">${TY[c.ty]}</span></div>
+    <div class="art ${c.ty==="img"?"big":""}" aria-hidden="true">${c.art}</div>
+    <h2 class="q">${c.q}</h2>${body}</div>`;
+}
+function faceBack(c){
+  const p=S.picked[c.id];let v;
+  if(c.ty==="flip"||!p)v=`<div class="verdict neutral">Ini jawabannya</div>`;
+  else if(p.ok)v=`<div class="verdict ok"><span aria-hidden="true">✓</span>${OKS[c.n%OKS.length]}</div>`;
+  else v=`<div class="verdict no"><span aria-hidden="true">!</span>Belum tepat, tidak apa-apa!</div>`;
+  const o=c.ty==="flip"?null:opts(c);
+  const you=(p&&!p.ok)?`<p class="you">Kamu memilih: <b>${o.texts[p.i]}</b></p>`:"";
+  return `<div class="face back t${c.t}" data-act="flip" aria-label="Sisi belakang kartu">
+    ${v}${you}
+    <div class="lab">${c.ty==="flip"?"Jawaban":"Jawaban yang benar"}</div>
+    <p class="ans">${answerText(c)}</p>
+    <p class="exp">${c.exp}</p>
+    <div class="back-hint">Ketuk kartu untuk kembali ke soal</div></div>`;
+}
+function syncInert(){
+  const f=stage.querySelector(".front"),b=stage.querySelector(".back");
+  if(!f||!b)return;
+  f.inert=S.flipped;b.inert=!S.flipped;
+  f.setAttribute("aria-hidden",S.flipped);b.setAttribute("aria-hidden",!S.flipped);
+}
+function renderCard(){
+  const N=S.deck.length;
+  if(!N){
+    stage.innerHTML=`<div class="sum empty"><div class="art" aria-hidden="true">🔍</div><h2>Belum ada kartu</h2><p>${S.mode==="ulang"?"Belum ada kartu yang kamu tandai Perlu Belajar Lagi. Hebat!":"Tidak ada kartu untuk pilihan ini."}</p><div class="acts"><button class="btn primary" data-act="all">Tampilkan semua kartu</button></div></div>`;
+    return;
+  }
+  if(S.i>=N){renderSummary();return}
+  const c=S.deck[S.i];
+  stage.innerHTML=`<div class="card ${S.flipped?"flipped":""}" id="card">${faceFront(c)}${faceBack(c)}</div>`;
+  syncInert();
+}
+function renderSummary(){
+  const d=S.deck,N=d.length;
+  const pa=d.filter(c=>prog[c.id]==="paham").length,ul=d.filter(c=>prog[c.id]==="ulang").length;
+  const ans=d.filter(c=>S.picked[c.id]),ok=ans.filter(c=>S.picked[c.id].ok).length;
+  const msg=ul===0&&pa===N?"Luar biasa! Semua kartu sudah kamu pahami.":ul>0?"Bagus! Kartu yang ditandai bisa kamu ulang sekarang.":"Kamu sudah sampai di kartu terakhir.";
+  stage.innerHTML=`<div class="sum"><div class="art" aria-hidden="true">🏆</div><h2>Kartu selesai!</h2><p style="margin:0;font-weight:700">${msg}</p>
+    <div class="grid"><div><b>${pa}</b>Sudah paham</div><div><b>${ul}</b>Perlu belajar lagi</div><div><b>${ans.length?ok+"/"+ans.length:"-"}</b>Jawaban benar</div></div>
+    <div class="acts">
+      ${ul>0?`<button class="btn primary" data-act="redo">Ulangi ${ul} kartu yang perlu dipelajari</button>`:""}
+      <button class="btn" data-act="restart">Mulai dari awal</button>
+      <button class="btn" data-act="reset">${S.resetArm?"Yakin? Ketuk lagi untuk menghapus":"Hapus semua progres"}</button>
+    </div></div>`;
+}
+function renderChrome(){
+  const N=S.deck.length,done=S.i>=N&&N>0;
+  document.querySelectorAll(".chip-btn").forEach(b=>{
+    const f=b.dataset.f,v=b.dataset.v;
+    if(f==="shuffle")b.setAttribute("aria-pressed",S.shuffle);
+    else b.setAttribute("aria-pressed",String(S[f])===v);
+  });
+  const nU=CARDS.filter(c=>prog[c.id]==="ulang").length;
+  $("#modeUlang").textContent=`Perlu belajar lagi (${nU})`;
+  $("#modeUlang").disabled=nU===0&&S.mode!=="ulang";
+  $("#fsum").textContent=`· ${N} kartu`;
+  $("#count").textContent=N?(done?`Selesai · ${N} kartu`:`Kartu ${S.i+1} dari ${N}`):"Tidak ada kartu";
+  $("#sP").textContent=CARDS.filter(c=>prog[c.id]==="paham").length;
+  $("#sU").textContent=nU;
+  $("#barfill").style.width=N?Math.min(100,(S.i/N)*100)+"%":"0";
+  $("#dots").innerHTML=S.deck.map((c,k)=>`<button class="dot ${prog[c.id]||""} ${k===S.i?"cur":""}" data-go="${k}" tabindex="-1" aria-label="Kartu ${k+1}"></button>`).join("");
+  const showCtl=N>0&&!done;
+  $("#controls").hidden=!showCtl;
+  $("#bPrev").disabled=S.i===0;
+  const c=S.deck[S.i];
+  $("#bFlip").textContent=S.flipped?"Kembali ke Soal":(c&&c.ty!=="flip"&&!S.picked[c.id]?"Lewati, Lihat Jawaban":"Lihat Jawaban");
+  $("#rate").hidden=!S.flipped;
+}
+function render(){renderCard();renderChrome()}
+
+/* ===== Aksi ===== */
+function setFlip(v){
+  S.flipped=v;
+  const el=$("#card");if(el)el.classList.toggle("flipped",v);
+  syncInert();renderChrome();
+}
+function pick(oi){
+  const c=S.deck[S.i];if(!c||S.picked[c.id])return;
+  const o=opts(c);
+  S.picked[c.id]={i:oi,ok:oi===o.right};
+  renderCard();renderChrome();
+  clearTimeout(S.timer);
+  S.timer=setTimeout(()=>{if(S.deck[S.i]===c)setFlip(true)},1000);
+}
+function go(k){clearTimeout(S.timer);S.i=Math.max(0,Math.min(S.deck.length,k));S.flipped=false;render();window.scrollTo({top:0,behavior:"smooth"})}
+function rate(v){
+  const c=S.deck[S.i];if(!c)return;
+  prog[c.id]=v;save();go(S.i+1);
+}
+document.addEventListener("click",e=>{
+  const opt=e.target.closest(".opt");
+  if(opt&&!opt.disabled){pick(+opt.dataset.opt);return}
+  const dot=e.target.closest("[data-go]");
+  if(dot){go(+dot.dataset.go);return}
+  const f=e.target.closest(".chip-btn");
+  if(f){
+    const k=f.dataset.f,v=f.dataset.v;
+    if(k==="shuffle")S.shuffle=!S.shuffle;else S[k]=v;
+    buildDeck();render();return;
+  }
+  const a=e.target.closest("[data-act]");
+  if(!a)return;
+  const act=a.dataset.act;
+  if(act==="flip"){clearTimeout(S.timer);setFlip(!S.flipped)}
+  else if(act==="next")go(S.i+1);
+  else if(act==="prev")go(S.i-1);
+  else if(act==="paham"||act==="ulang")rate(act);
+  else if(act==="all"){S.topic="all";S.level="all";S.mode="all";buildDeck();render()}
+  else if(act==="redo"){S.mode="ulang";buildDeck();render()}
+  else if(act==="restart")go(0);
+  else if(act==="reset"){
+    if(!S.resetArm){S.resetArm=true;renderSummary();setTimeout(()=>{S.resetArm=false;if(S.i>=S.deck.length&&S.deck.length)renderSummary()},4000)}
+    else{S.resetArm=false;prog={};S.picked={};save();S.mode="all";buildDeck();render()}
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  const t=e.target,onBody=t===document.body,onFace=t.matches&&t.matches('[data-act="flip"]');
+  if(e.key==="ArrowRight"&&(onBody||onFace)){go(S.i+1)}
+  else if(e.key==="ArrowLeft"&&(onBody||onFace)){go(S.i-1)}
+  else if((e.key===" "||e.key==="Enter")&&(onBody||onFace)&&S.deck[S.i]){e.preventDefault();clearTimeout(S.timer);setFlip(!S.flipped)}
+});
+
+/* ===== Mulai ===== */
+if(window.matchMedia("(max-width:560px)").matches)$("#filters").open=false;
+buildDeck();render();
+</script>
+
+</body></html>
